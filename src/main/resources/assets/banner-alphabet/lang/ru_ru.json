@@ -1,0 +1,15 @@
+{
+  "banner-alphabet:back_color": "Цвет фона",
+  "banner-alphabet:main_color": "Основной цвет",
+
+  "banner-alphabet:command.no_banner_in_arm": "Чтобы использовать эту команду, вы должны взять баннер в основную руку",
+  "banner-alphabet:command.saved": "Баннеры сохранены",
+  "banner-alphabet:command.loaded": "Баннеры загружены",
+  "banner-alphabet:command.removed": "Баннер удален",
+  "banner-alphabet:command.added": "Баннер добавлен",
+  "banner-alphabet:command.no_banners_in_arms": "Чтобы использовать эту команду, вы должны взять новый баннер в основную руку и старый во вторую руку",
+  "banner-alphabet:command.replace": "Баннер заменен",
+  "banner-alphabet:command.no_replace": "Баннер не заменен, возможно старого нет в списке или уже новый уже содержиться в списке",
+  "banner-alphabet:command.no_removed": "Баннер не удален, возможно его нет в списке",
+  "banner-alphabet:command.no_added": "Баннер не добавлен, возможно он уже содержиться в списке"
+}

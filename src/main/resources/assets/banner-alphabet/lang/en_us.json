@@ -1,0 +1,16 @@
+{
+  "banner-alphabet:title": "Banner alphabet",
+  "banner-alphabet:back_color": "Back color",
+  "banner-alphabet:main_color": "Main color",
+
+  "banner-alphabet:command.no_banner_in_arm": "To use this command, you must hold the banner in your main hand",
+  "banner-alphabet:command.saved": "Banners saved",
+  "banner-alphabet:command.loaded": "Banners loaded",
+  "banner-alphabet:command.removed": "Banner removed",
+  "banner-alphabet:command.added": "Banner added",
+  "banner-alphabet:command.no_banners_in_arms": "To use this command, you must hold new banner in your main hand and old banner in off hand",
+  "banner-alphabet:command.replace": "Banner replaced",
+  "banner-alphabet:command.no_replace": "Banner was not replaced; new may already be in the list or old might not be in the list",
+  "banner-alphabet:command.no_removed": "Banner has not been deleted; it might not be in the list",
+  "banner-alphabet:command.no_added": "Banner was not added; it may already be in the list"
+}

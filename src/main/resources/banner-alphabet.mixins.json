@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "com.mrg.banneralphabet.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"CreativeMenuMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
