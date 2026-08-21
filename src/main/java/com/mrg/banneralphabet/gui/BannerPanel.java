@@ -9,7 +9,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryListener;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -31,8 +30,6 @@ import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.List;
-
 @Environment(EnvType.CLIENT)
 public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> {
     private static final Identifier SCROLLER_TEXTURE = Identifier.ofVanilla("container/creative_inventory/scroller");
@@ -43,18 +40,8 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     private Screen parent;
     static final SimpleInventory INVENTORY = new SimpleInventory(20);
 
-    private static final int ROWS_COUNT = 5;
-    private static final int COLUMNS_COUNT = 4;
-    private static final int SCROLLBAR_WIDTH = 12;
-    private static final int SCROLLBAR_HEIGHT = 15;
-
-    private CreativeInventoryListener listener;
-    private List<Slot> slots;
-
     private float scrollPosition;
     private boolean scrolling;
-    private boolean ignoreTypedCharacter;
-    private boolean lastClickOutsideBounds;
 
     @Override
     public void blur() {}

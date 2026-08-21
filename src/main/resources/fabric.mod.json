@@ -3,15 +3,15 @@
 	"id": "banner-alphabet",
 	"version": "${version}",
 	"name": "Banner alphabet",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "This mod adds a new menu to creative that allows you to automatically create banners!",
 	"authors": [
-		"Me!"
+		"mr_GrANTt"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/mrGrANTt/banner-alphabet"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT License",
 	"icon": "assets/banner-alphabet/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -30,5 +30,14 @@
 	},
 	"suggests": {
 		"another-mod": "*"
+	},
+
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://discord.gg/93pabTAKfZ"
+			},
+			"update_checker": true
+		}
 	}
 }

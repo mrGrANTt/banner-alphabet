@@ -30,7 +30,7 @@ public class CreativeMenuMixin extends Screen {
         int x = buttonWidth/2;
         int y = buttonHeight/2;
 
-        ButtonWidget arcadeButton = ButtonWidget.builder(
+        ButtonWidget menuButton = ButtonWidget.builder(
                         Text.of(""),
                         button -> this.client.setScreen(new BannerPanel(this, MinecraftClient.getInstance().player)))
                 .dimensions(x, y, buttonWidth, buttonHeight)
@@ -39,7 +39,7 @@ public class CreativeMenuMixin extends Screen {
         int delta = 2;
         ItemStackWidget banner = new ItemStackWidget(client, x+delta, y+delta, buttonWidth, buttonHeight, Text.of(""), new ItemStack(Items.CREEPER_BANNER_PATTERN), false, false);
 
-        this.addDrawableChild(arcadeButton);
+        this.addDrawableChild(menuButton);
         this.addDrawableChild(banner);
     }
 }

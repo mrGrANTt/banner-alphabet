@@ -1,6 +1,7 @@
 package com.mrg.banneralphabet.util.config;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.mrg.banneralphabet.BannerAlphabet;
@@ -25,7 +26,7 @@ public class BannerConfig {
     private static List<BannerJSONElement> banners;
 
     public static void serialize() {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();;
         String jsonResult = gson.toJson(banners);
         try {
             if (Files.exists(JSON_PATH))
