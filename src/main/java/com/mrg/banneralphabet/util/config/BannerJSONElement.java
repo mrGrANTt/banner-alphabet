@@ -6,6 +6,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.item.BannerItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.util.DyeColor;
 
@@ -29,7 +30,7 @@ public class BannerJSONElement {
             patterns.add(new BannerJSONPattern(layer, item.getColor()));
     }
 
-    public ItemStack getBanner(DyeColor main, DyeColor back, RegistryEntryLookup<BannerPattern> lookup) {
+    public ItemStack getBanner(DyeColor main, DyeColor back, Registry<BannerPattern> lookup) {
         BannerBlock block = (BannerBlock) BannerBlock.getForColor(back);
         ItemStack stack = block.asItem().getDefaultStack();
         List<BannerPatternsComponent.Layer> layers = new ArrayList<>();

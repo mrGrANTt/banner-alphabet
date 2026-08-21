@@ -9,6 +9,7 @@ import net.minecraft.block.entity.BannerPattern;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.DyeColor;
@@ -81,7 +82,7 @@ public class BannerConfig {
     public static List<ItemStack> getBanners(DyeColor main, DyeColor back) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) throw new RuntimeException("Client player entity doesn't initialized");
-        RegistryEntryLookup<BannerPattern> lookup = player.getRegistryManager().getOrThrow(RegistryKeys.BANNER_PATTERN);
+        Registry<BannerPattern> lookup = player.getRegistryManager().get(RegistryKeys.BANNER_PATTERN);
 
         List<ItemStack> list = new ArrayList<>(List.of());
         for (BannerJSONElement el : banners) {

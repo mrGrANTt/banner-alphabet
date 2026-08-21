@@ -2,10 +2,11 @@ package com.mrg.banneralphabet.mixin;
 
 import com.mrg.banneralphabet.gui.BannerPanel;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ItemStackWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
 
 @Mixin(CreativeInventoryScreen.class)
 public class CreativeMenuMixin extends Screen {
@@ -37,9 +39,15 @@ public class CreativeMenuMixin extends Screen {
                 .build();
 
         int delta = 2;
-        ItemStackWidget banner = new ItemStackWidget(client, x+delta, y+delta, buttonWidth, buttonHeight, Text.of(""), new ItemStack(Items.CREEPER_BANNER_PATTERN), false, false);
+        Drawable banner = new Drawable() {
+            ItemStack itemStack = new ItemStack(Items.CREEPER_BANNER_PATTERN);
+            @Override
+            public void render(DrawContext context, int mouseX, int mouseY, float d) {
+                context.drawItem(itemStack, x+delta, y+delta, buttonWidth, buttonHeight);
+            }
+        };
 
         this.addDrawableChild(menuButton);
-        this.addDrawableChild(banner);
+        this.addDrawable(banner);
     }
 }
