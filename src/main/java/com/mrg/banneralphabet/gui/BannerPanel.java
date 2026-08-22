@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -57,10 +58,10 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
 
     @Override
     protected void drawBackground(DrawContext dc, float delta, int mx, int my) {
-        dc.drawTexture(MENU_TEXTURE, this.x, this.y, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
+        dc.drawTexture(RenderLayer::getGuiTextured, MENU_TEXTURE, this.x, this.y, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
 
-        dc.drawTexture(SELECTED_SLOT, this.x + 9 + BannerScreenHandler.mainColor.getX()*10, this.y + 35 + BannerScreenHandler.mainColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
-        dc.drawTexture(SELECTED_SLOT, this.x + 9 + BannerScreenHandler.backColor.getX()*10,  this.y + 71 + BannerScreenHandler.backColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
+        dc.drawTexture(RenderLayer::getGuiTextured, SELECTED_SLOT, this.x + 9 + BannerScreenHandler.mainColor.getX()*10, this.y + 35 + BannerScreenHandler.mainColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
+        dc.drawTexture(RenderLayer::getGuiTextured, SELECTED_SLOT, this.x + 9 + BannerScreenHandler.backColor.getX()*10,  this.y + 71 + BannerScreenHandler.backColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
 
         dc.drawText(textRenderer, Text.translatable("banner-alphabet:title"), this.x + 8, this.y + 6, 0xFF3F3F3F, false);
         dc.drawText(textRenderer, Text.translatable("banner-alphabet:main_color"), this.x + 8, this.y + 26, 0xFF3F3F3F, false);
@@ -70,7 +71,7 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
         int j = this.y + 18;
         int k = j + 112;
         Identifier identifier = handler.shouldShowScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-        dc.drawGuiTexture(identifier, i, j + (int)((k - j - 17) * this.scrollPosition), 12, 15);
+        dc.drawGuiTexture(RenderLayer::getGuiTextured, identifier, i, j + (int)((k - j - 17) * this.scrollPosition), 12, 15);
     }
 
     @Override
@@ -157,9 +158,13 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     protected void onMouseClick(@Nullable Slot slot, int slotId, int button, SlotActionType actionType) {
         boolean bl = actionType == SlotActionType.QUICK_MOVE;
         actionType = slotId == -999 && actionType == SlotActionType.PICKUP ? SlotActionType.THROW : actionType;
-        if (actionType != SlotActionType.THROW) {
+        if (actionType != SlotActionType.THROW || this.client.player.canDropItems()) {
             if (slot == null && actionType != SlotActionType.QUICK_CRAFT) {
                 if (!this.handler.getCursorStack().isEmpty() && slotId == -999) {
+                    if (!this.client.player.canDropItems()) {
+                        return;
+                    }
+
                     if (button == 0) {
                         this.client.player.dropItem(this.handler.getCursorStack(), true);
                         CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(-1, this.handler.getCursorStack());
@@ -358,10 +363,7 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
 
             bannerList.addAll(BannerConfig.getBanners(mainColor.getColor(), backColor.getColor()));
 
-            for(int i = 0; i < 9; ++i) {
-                this.addSlot(new Slot(playerInventory, i, 9 + i * 18, 112));
-            }
-
+            this.addPlayerHotbarSlots(playerInventory, 9, 112);
             this.scrollItems(0.0F);
         }
 
@@ -488,7 +490,6 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
             return this.slot.getMaxItemCount(stack);
         }
 
-        @Nullable
         @Override
         public Pair<Identifier, Identifier> getBackgroundSprite() {
             return this.slot.getBackgroundSprite();

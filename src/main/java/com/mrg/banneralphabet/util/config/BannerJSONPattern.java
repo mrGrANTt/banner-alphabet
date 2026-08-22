@@ -3,7 +3,6 @@ package com.mrg.banneralphabet.util.config;
 import net.minecraft.block.entity.BannerPattern;
 import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -11,7 +10,6 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 
 import java.util.Objects;
-import java.util.Optional;
 
 public class BannerJSONPattern {
     private final String pattern;
@@ -28,8 +26,8 @@ public class BannerJSONPattern {
 
     public int getColor() { return color; }
     public RegistryEntry<BannerPattern> getPattern(Registry<BannerPattern> lookup) {
-        Optional<BannerPattern> opt = lookup.getOrEmpty(RegistryKey.of(RegistryKeys.BANNER_PATTERN, Identifier.of(pattern)));
-        return opt.map(lookup::getEntry).orElse(null);
+        BannerPattern ptrn = lookup.get(RegistryKey.of(RegistryKeys.BANNER_PATTERN, Identifier.of(pattern)));
+        return lookup.getEntry(ptrn);
     }
 
     @Override

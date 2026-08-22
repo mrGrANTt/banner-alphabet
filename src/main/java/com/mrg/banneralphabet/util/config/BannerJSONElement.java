@@ -7,7 +7,6 @@ import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.item.BannerItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.util.DyeColor;
 
 import java.util.ArrayList;
