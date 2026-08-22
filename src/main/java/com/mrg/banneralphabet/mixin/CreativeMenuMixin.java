@@ -42,7 +42,7 @@ public class CreativeMenuMixin extends Screen {
             ItemStack itemStack = new ItemStack(Items.CREEPER_BANNER_PATTERN);
             @Override
             public void render(DrawContext context, int mouseX, int mouseY, float d) {
-                context.drawItem(itemStack, x+delta, y+delta, buttonWidth, buttonHeight);
+                context.drawItem(itemStack, x+delta, y+delta);
             }
         };
 
