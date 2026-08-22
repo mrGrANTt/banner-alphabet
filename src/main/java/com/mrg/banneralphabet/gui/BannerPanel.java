@@ -6,12 +6,12 @@ import com.mrg.banneralphabet.util.config.BannerConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -57,10 +57,10 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
 
     @Override
     protected void drawBackground(DrawContext dc, float delta, int mx, int my) {
-        dc.drawTexture(RenderPipelines.GUI_TEXTURED, MENU_TEXTURE, this.x, this.y, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
+        dc.drawTexture(RenderLayer::getGuiTextured, MENU_TEXTURE, this.x, this.y, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
 
-        dc.drawTexture(RenderPipelines.GUI_TEXTURED, SELECTED_SLOT, this.x + 9 + BannerScreenHandler.mainColor.getX()*10, this.y + 35 + BannerScreenHandler.mainColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
-        dc.drawTexture(RenderPipelines.GUI_TEXTURED, SELECTED_SLOT, this.x + 9 + BannerScreenHandler.backColor.getX()*10,  this.y + 71 + BannerScreenHandler.backColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
+        dc.drawTexture(RenderLayer::getGuiTextured, SELECTED_SLOT, this.x + 9 + BannerScreenHandler.mainColor.getX()*10, this.y + 35 + BannerScreenHandler.mainColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
+        dc.drawTexture(RenderLayer::getGuiTextured, SELECTED_SLOT, this.x + 9 + BannerScreenHandler.backColor.getX()*10,  this.y + 71 + BannerScreenHandler.backColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
 
         dc.drawText(textRenderer, Text.translatable("banner-alphabet:title"), this.x + 8, this.y + 6, 0xFF3F3F3F, false);
         dc.drawText(textRenderer, Text.translatable("banner-alphabet:main_color"), this.x + 8, this.y + 26, 0xFF3F3F3F, false);
@@ -70,7 +70,7 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
         int j = this.y + 18;
         int k = j + 112;
         Identifier identifier = handler.shouldShowScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-        dc.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier, i, j + (int)((k - j - 17) * this.scrollPosition), 12, 15);
+        dc.drawGuiTexture(RenderLayer::getGuiTextured, identifier, i, j + (int)((k - j - 17) * this.scrollPosition), 12, 15);
     }
 
     @Override
