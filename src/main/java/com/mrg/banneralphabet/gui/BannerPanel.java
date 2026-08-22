@@ -7,12 +7,13 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -80,18 +81,18 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+    public boolean keyPressed(KeyInput input) {
+        if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
             this.close();
-        } else if (this.client.options.inventoryKey.matchesKey(keyCode, scanCode)) {
+        } else if (this.client.options.inventoryKey.matchesKey(input)) {
             this.close();
         } else {
-            this.handleHotbarKeyPressed(keyCode, scanCode);
+            this.handleHotbarKeyPressed(input);
             if (this.focusedSlot != null && this.focusedSlot.hasStack()) {
-                if (this.client.options.pickItemKey.matchesKey(keyCode, scanCode)) {
+                if (this.client.options.pickItemKey.matchesKey(input)) {
                     this.onMouseClick(this.focusedSlot, this.focusedSlot.id, 0, SlotActionType.CLONE);
-                } else if (this.client.options.dropKey.matchesKey(keyCode, scanCode)) {
-                    this.onMouseClick(this.focusedSlot, this.focusedSlot.id, hasControlDown() ? 1 : 0, SlotActionType.THROW);
+                } else if (this.client.options.dropKey.matchesKey(input)) {
+                    this.onMouseClick(this.focusedSlot, this.focusedSlot.id, input.hasCtrl() ? 1 : 0, SlotActionType.THROW);
                 }
             }
 
@@ -122,29 +123,29 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(Click click, double offsetX, double offsetY) {
         if (this.scrolling) {
             int i = this.y + 18;
             int j = i + 112;
-            this.scrollPosition = ((float)mouseY - i - 7.5F) / (j - i - 15.0F);
+            this.scrollPosition = ((float)click.y() - i - 7.5F) / (j - i - 15.0F);
             this.scrollPosition = MathHelper.clamp(this.scrollPosition, 0.0F, 1.0F);
             this.handler.scrollItems(this.scrollPosition);
             return true;
         } else {
-            return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+            return super.mouseDragged(click, offsetX, offsetY);
         }
     }
 
     @Override
-    protected boolean handleHotbarKeyPressed(int keyCode, int scanCode) {
+    protected boolean handleHotbarKeyPressed(KeyInput input) {
         if (this.handler.getCursorStack().isEmpty() && this.focusedSlot != null) { //TODO: Почему то дополнительно выдает + 1 стак
-            if (this.client.options.swapHandsKey.matchesKey(keyCode, scanCode)) {
+            if (this.client.options.swapHandsKey.matchesKey(input)) {
                 this.onMouseClick(this.focusedSlot, this.focusedSlot.id, 40, SlotActionType.SWAP);
                 return true;
             }
 
             for (int i = 0; i < 9; i++) {
-                if (this.client.options.hotbarKeys[i].matchesKey(keyCode, scanCode)) {
+                if (this.client.options.hotbarKeys[i].matchesKey(input)) {
                     this.onMouseClick(this.focusedSlot, this.focusedSlot.id, i, SlotActionType.SWAP);
                     return true;
                 }
@@ -278,13 +279,13 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            double d = mouseX - this.x;
-            double e = mouseY - this.y;
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (click.button() == 0) {
+            double d = click.x() - this.x;
+            double e = click.y() - this.y;
             this.scrolling = false;
 
-            if (this.isClickInScrollbar(mouseX, mouseY)) {
+            if (this.isClickInScrollbar(click.x(), click.y())) {
                 this.scrolling = handler.shouldShowScrollbar();
                 return true;
             }
@@ -303,7 +304,7 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     protected boolean isClickInScrollbar(double mouseX, double mouseY) {
@@ -317,11 +318,11 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseReleased(Click click) {
+        if (click.button() == 0) {
             this.scrolling = false;
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     private BannerMenuColors getClickedColor(double x, double y) {
@@ -522,7 +523,7 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
         public boolean canTakeItems(PlayerEntity playerEntity) {
             ItemStack itemStack = this.getStack();
             return super.canTakeItems(playerEntity) && !itemStack.isEmpty()
-                    ? itemStack.isItemEnabled(playerEntity.getWorld().getEnabledFeatures()) && !itemStack.contains(DataComponentTypes.CREATIVE_SLOT_LOCK)
+                    ? itemStack.isItemEnabled(playerEntity.getEntityWorld().getEnabledFeatures()) && !itemStack.contains(DataComponentTypes.CREATIVE_SLOT_LOCK)
                     : itemStack.isEmpty();
         }
     }
