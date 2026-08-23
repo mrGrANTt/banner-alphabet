@@ -1,13 +1,13 @@
 package com.mrg.banneralphabet.util.config;
 
-import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.DyeColor;
 
 import java.util.Objects;
 
@@ -15,8 +15,8 @@ public class BannerJSONPattern {
     private final String pattern;
     private final int color;
 
-    public BannerJSONPattern(BannerPatternsComponent.Layer layer, DyeColor back) {
-        pattern = layer.pattern().getIdAsString();
+    public BannerJSONPattern(BannerPatternLayers.Layer layer, DyeColor back) {
+        pattern = layer.pattern().getRegisteredName();
         color = layer.color() == back ? 0 : 1;
     }
     public BannerJSONPattern() {
@@ -25,8 +25,8 @@ public class BannerJSONPattern {
     }
 
     public int getColor() { return color; }
-    public RegistryEntry<BannerPattern> getPattern(RegistryEntryLookup<BannerPattern> lookup) {
-        return lookup.getOrThrow(RegistryKey.of(RegistryKeys.BANNER_PATTERN, Identifier.of(pattern)));
+    public Holder<BannerPattern> getPattern(HolderGetter<BannerPattern> lookup) {
+        return lookup.getOrThrow(ResourceKey.create(Registries.BANNER_PATTERN, Identifier.parse(pattern)));
     }
 
     @Override

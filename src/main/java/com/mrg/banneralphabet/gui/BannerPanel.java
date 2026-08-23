@@ -5,94 +5,92 @@ import com.mrg.banneralphabet.util.BannerMenuColors;
 import com.mrg.banneralphabet.util.config.BannerConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.*;
-import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.NonNullList;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
-public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> {
-    private static final Identifier SCROLLER_TEXTURE = Identifier.ofVanilla("container/creative_inventory/scroller");
-    private static final Identifier SCROLLER_DISABLED_TEXTURE = Identifier.ofVanilla("container/creative_inventory/scroller_disabled");
-    private static final Identifier MENU_TEXTURE = Identifier.tryParse(BannerAlphabet.MOD_ID, "/textures/menu.png");
-    private static final Identifier SELECTED_SLOT = Identifier.tryParse(BannerAlphabet.MOD_ID, "/textures/selected_slot.png");
+public class BannerPanel extends AbstractContainerScreen<BannerPanel.BannerScreenHandler> {
+    private static final Identifier SCROLLER_TEXTURE = Identifier.withDefaultNamespace("container/creative_inventory/scroller");
+    private static final Identifier SCROLLER_DISABLED_TEXTURE = Identifier.withDefaultNamespace("container/creative_inventory/scroller_disabled");
+    private static final Identifier MENU_TEXTURE = Identifier.tryBuild(BannerAlphabet.MOD_ID, "/textures/menu.png");
+    private static final Identifier SELECTED_SLOT = Identifier.tryBuild(BannerAlphabet.MOD_ID, "/textures/selected_slot.png");
 
     private Screen parent;
-    static final SimpleInventory INVENTORY = new SimpleInventory(20);
+    static final SimpleContainer INVENTORY = new SimpleContainer(20);
 
     private float scrollPosition;
     private boolean scrolling;
 
     @Override
-    public void blur() {}
+    public void clearFocus() {}
 
-    public BannerPanel(Screen parent, ClientPlayerEntity player) {
-        super(new BannerPanel.BannerScreenHandler(player), player.getInventory(), ScreenTexts.EMPTY);
-        player.currentScreenHandler = this.handler;
-        this.backgroundHeight = 136;
-        this.backgroundWidth = 195;
+    public BannerPanel(Screen parent, LocalPlayer player) {
+        super(new BannerPanel.BannerScreenHandler(player), player.getInventory(), CommonComponents.EMPTY, 195, 136);
+        player.containerMenu = this.menu;
         this.parent = parent;
-        playerInventoryTitleY = -MinecraftClient.getInstance().getWindow().getHeight()/2;
+        inventoryLabelY = -Minecraft.getInstance().getWindow().getScreenHeight()/2;
     }
 
     @Override
-    protected void drawBackground(DrawContext dc, float delta, int mx, int my) {
-        dc.drawTexture(RenderPipelines.GUI_TEXTURED, MENU_TEXTURE, this.x, this.y, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
+    public void extractBackground(final GuiGraphicsExtractor dc, final int mouseX, final int mouseY, final float a) {
+        dc.blit(RenderPipelines.GUI_TEXTURED, MENU_TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
-        dc.drawTexture(RenderPipelines.GUI_TEXTURED, SELECTED_SLOT, this.x + 9 + BannerScreenHandler.mainColor.getX()*10, this.y + 35 + BannerScreenHandler.mainColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
-        dc.drawTexture(RenderPipelines.GUI_TEXTURED, SELECTED_SLOT, this.x + 9 + BannerScreenHandler.backColor.getX()*10,  this.y + 71 + BannerScreenHandler.backColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
+        dc.blit(RenderPipelines.GUI_TEXTURED, SELECTED_SLOT, this.leftPos + 9 + BannerScreenHandler.mainColor.getX()*10, this.topPos + 35 + BannerScreenHandler.mainColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
+        dc.blit(RenderPipelines.GUI_TEXTURED, SELECTED_SLOT, this.leftPos + 9 + BannerScreenHandler.backColor.getX()*10,  this.topPos + 71 + BannerScreenHandler.backColor.getY()*10, 0.0F, 0.0F, 10, 10, 10, 10);
 
-        dc.drawText(textRenderer, Text.translatable("banner-alphabet:title"), this.x + 8, this.y + 6, 0xFF3F3F3F, false);
-        dc.drawText(textRenderer, Text.translatable("banner-alphabet:main_color"), this.x + 8, this.y + 26, 0xFF3F3F3F, false);
-        dc.drawText(textRenderer, Text.translatable("banner-alphabet:back_color"), this.x + 8, this.y + 62, 0xFF3F3F3F, false);
+        dc.text(font, Component.translatable("banner-alphabet:title"), this.leftPos + 8, this.topPos + 6, 0xFF3F3F3F, false);
+        dc.text(font, Component.translatable("banner-alphabet:main_color"), this.leftPos + 8, this.topPos + 26, 0xFF3F3F3F, false);
+        dc.text(font, Component.translatable("banner-alphabet:back_color"), this.leftPos + 8, this.topPos + 62, 0xFF3F3F3F, false);
 
-        int i = this.x + 175;
-        int j = this.y + 18;
+        int i = this.leftPos + 175;
+        int j = this.topPos + 18;
         int k = j + 112;
-        Identifier identifier = handler.shouldShowScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-        dc.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier, i, j + (int)((k - j - 17) * this.scrollPosition), 12, 15);
+        Identifier identifier = menu.shouldShowScrollbar() ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
+        dc.blitSprite(RenderPipelines.GUI_TEXTURED, identifier, i, j + (int)((k - j - 17) * this.scrollPosition), 12, 15);
     }
 
     @Override
-    public void close() {
-        MinecraftClient.getInstance().setScreen(parent);
+    public void onClose() {
+        Minecraft.getInstance().setScreen(parent);
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
+    public boolean keyPressed(KeyEvent input) {
         if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
-            this.close();
-        } else if (this.client.options.inventoryKey.matchesKey(input)) {
-            this.close();
+            this.onClose();
+        } else if (this.minecraft.options.keyInventory.matches(input)) {
+            this.onClose();
         } else {
-            this.handleHotbarKeyPressed(input);
-            if (this.focusedSlot != null && this.focusedSlot.hasStack()) {
-                if (this.client.options.pickItemKey.matchesKey(input)) {
-                    this.onMouseClick(this.focusedSlot, this.focusedSlot.id, 0, SlotActionType.CLONE);
-                } else if (this.client.options.dropKey.matchesKey(input)) {
-                    this.onMouseClick(this.focusedSlot, this.focusedSlot.id, input.hasCtrl() ? 1 : 0, SlotActionType.THROW);
+            this.checkHotbarKeyPressed(input);
+            if (this.hoveredSlot != null && this.hoveredSlot.hasItem()) {
+                if (this.minecraft.options.keyPickItem.matches(input)) {
+                    this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, 0, ContainerInput.CLONE);
+                } else if (this.minecraft.options.keyDrop.matches(input)) {
+                    this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, input.hasControlDown() ? 1 : 0, ContainerInput.THROW);
                 }
             }
 
@@ -104,32 +102,32 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             return true;
-        } else if (!handler.shouldShowScrollbar()) {
+        } else if (!menu.shouldShowScrollbar()) {
             return false;
         } else {
-            this.scrollPosition = this.handler.getScrollPosition(this.scrollPosition, verticalAmount);
-            this.handler.scrollItems(this.scrollPosition);
+            this.scrollPosition = this.menu.getScrollPosition(this.scrollPosition, verticalAmount);
+            this.menu.scrollItems(this.scrollPosition);
             return true;
         }
     }
 
     @Override
-    public void resize(MinecraftClient client, int width, int height) {
-        int i = this.handler.getRow(this.scrollPosition);
-        this.init(client, width, height);
+    public void resize(final int width, final int height) {
+        int i = this.menu.getRow(this.scrollPosition);
+        this.init(width, height);
 
-        this.scrollPosition = this.handler.getScrollPosition(i);
-        this.handler.scrollItems(this.scrollPosition);
+        this.scrollPosition = this.menu.getScrollPosition(i);
+        this.menu.scrollItems(this.scrollPosition);
     }
 
     @Override
-    public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+    public boolean mouseDragged(MouseButtonEvent click, double offsetX, double offsetY) {
         if (this.scrolling) {
-            int i = this.y + 18;
+            int i = this.topPos + 18;
             int j = i + 112;
             this.scrollPosition = ((float)click.y() - i - 7.5F) / (j - i - 15.0F);
-            this.scrollPosition = MathHelper.clamp(this.scrollPosition, 0.0F, 1.0F);
-            this.handler.scrollItems(this.scrollPosition);
+            this.scrollPosition = Mth.clamp(this.scrollPosition, 0.0F, 1.0F);
+            this.menu.scrollItems(this.scrollPosition);
             return true;
         } else {
             return super.mouseDragged(click, offsetX, offsetY);
@@ -137,16 +135,16 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Override
-    protected boolean handleHotbarKeyPressed(KeyInput input) {
-        if (this.handler.getCursorStack().isEmpty() && this.focusedSlot != null) { //TODO: Почему то дополнительно выдает + 1 стак
-            if (this.client.options.swapHandsKey.matchesKey(input)) {
-                this.onMouseClick(this.focusedSlot, this.focusedSlot.id, 40, SlotActionType.SWAP);
+    protected boolean checkHotbarKeyPressed(KeyEvent input) {
+        if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null) { //TODO: Почему то дополнительно выдает + 1 стак
+            if (this.minecraft.options.keySwapOffhand.matches(input)) {
+                this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, 40, ContainerInput.SWAP);
                 return true;
             }
 
             for (int i = 0; i < 9; i++) {
-                if (this.client.options.hotbarKeys[i].matchesKey(input)) {
-                    this.onMouseClick(this.focusedSlot, this.focusedSlot.id, i, SlotActionType.SWAP);
+                if (this.minecraft.options.keyHotbarSlots[i].matches(input)) {
+                    this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, i, ContainerInput.SWAP);
                     return true;
                 }
             }
@@ -156,121 +154,121 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Override
-    protected void onMouseClick(@Nullable Slot slot, int slotId, int button, SlotActionType actionType) {
-        boolean bl = actionType == SlotActionType.QUICK_MOVE;
-        actionType = slotId == -999 && actionType == SlotActionType.PICKUP ? SlotActionType.THROW : actionType;
-        if (actionType != SlotActionType.THROW || this.client.player.canDropItems()) {
-            if (slot == null && actionType != SlotActionType.QUICK_CRAFT) {
-                if (!this.handler.getCursorStack().isEmpty() && slotId == -999) {
-                    if (!this.client.player.canDropItems()) {
+    protected void slotClicked(@Nullable Slot slot, int slotId, int button, ContainerInput actionType) {
+        boolean bl = actionType == ContainerInput.QUICK_MOVE;
+        actionType = slotId == -999 && actionType == ContainerInput.PICKUP ? ContainerInput.THROW : actionType;
+        if (actionType != ContainerInput.THROW || this.minecraft.player.canDropItems()) {
+            if (slot == null && actionType != ContainerInput.QUICK_CRAFT) {
+                if (!this.menu.getCarried().isEmpty() && slotId == -999) {
+                    if (!this.minecraft.player.canDropItems()) {
                         return;
                     }
 
                     if (button == 0) {
-                        this.client.player.dropItem(this.handler.getCursorStack(), true);
-                        CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(-1, this.handler.getCursorStack());
-                        ClientPlayNetworkHandler net = MinecraftClient.getInstance().getNetworkHandler();
-                        net.sendPacket(pkg);
-                        this.handler.setCursorStack(ItemStack.EMPTY);
+                        this.minecraft.player.drop(this.menu.getCarried(), true);
+                        ServerboundSetCreativeModeSlotPacket pkg = new ServerboundSetCreativeModeSlotPacket(-1, this.menu.getCarried());
+                        ClientPacketListener net = Minecraft.getInstance().getConnection();
+                        net.send(pkg);
+                        this.menu.setCarried(ItemStack.EMPTY);
                     }
 
                     if (button == 1) {
-                        ItemStack itemStack = this.handler.getCursorStack().split(1);
-                        this.client.player.dropItem(itemStack, true);
-                        CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(-1, itemStack);
-                        ClientPlayNetworkHandler net = MinecraftClient.getInstance().getNetworkHandler();
-                        net.sendPacket(pkg);
+                        ItemStack itemStack = this.menu.getCarried().split(1);
+                        this.minecraft.player.drop(itemStack, true);
+                        ServerboundSetCreativeModeSlotPacket pkg = new ServerboundSetCreativeModeSlotPacket(-1, itemStack);
+                        ClientPacketListener net = Minecraft.getInstance().getConnection();
+                        net.send(pkg);
                     }
                 }
             } else {
-                if (slot != null && !slot.canTakeItems(this.client.player)) {
+                if (slot != null && !slot.mayPickup(this.minecraft.player)) {
                     return;
                 }
 
-                if (actionType != SlotActionType.QUICK_CRAFT && slot.inventory == INVENTORY) {
-                    ItemStack itemStack = this.handler.getCursorStack();
-                    ItemStack itemStack2 = slot.getStack();
-                    if (actionType == SlotActionType.SWAP) {
+                if (actionType != ContainerInput.QUICK_CRAFT && slot.container == INVENTORY) {
+                    ItemStack itemStack = this.menu.getCarried();
+                    ItemStack itemStack2 = slot.getItem();
+                    if (actionType == ContainerInput.SWAP) {
                         if (!itemStack2.isEmpty()) {
-                            ItemStack st = itemStack2.copyWithCount(itemStack2.getMaxCount());
-                            this.client.player.getInventory().setStack(button, st);
-                            CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(button, st);
-                            ClientPlayNetworkHandler net = MinecraftClient.getInstance().getNetworkHandler();
-                            net.sendPacket(pkg);
+                            ItemStack st = itemStack2.copyWithCount(itemStack2.getMaxStackSize());
+                            this.minecraft.player.getInventory().setItem(button, st);
+                            ServerboundSetCreativeModeSlotPacket pkg = new ServerboundSetCreativeModeSlotPacket(button, st);
+                            ClientPacketListener net = Minecraft.getInstance().getConnection();
+                            net.send(pkg);
                         }
 
                         return;
                     }
 
-                    if (actionType == SlotActionType.CLONE) {
-                        if (this.handler.getCursorStack().isEmpty() && slot.hasStack()) {
-                            ItemStack itemStack3 = slot.getStack();
-                            this.handler.setCursorStack(itemStack3.copyWithCount(itemStack3.getMaxCount()));
+                    if (actionType == ContainerInput.CLONE) {
+                        if (this.menu.getCarried().isEmpty() && slot.hasItem()) {
+                            ItemStack itemStack3 = slot.getItem();
+                            this.menu.setCarried(itemStack3.copyWithCount(itemStack3.getMaxStackSize()));
                         }
 
                         return;
                     }
 
-                    if (actionType == SlotActionType.THROW) {
+                    if (actionType == ContainerInput.THROW) {
                         if (!itemStack2.isEmpty()) {
-                            ItemStack itemStack3 = itemStack2.copyWithCount(button == 0 ? 1 : itemStack2.getMaxCount());
-                            this.client.player.dropItem(itemStack3, true);
-                            CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(-1, itemStack3);
-                            ClientPlayNetworkHandler net = MinecraftClient.getInstance().getNetworkHandler();
-                            net.sendPacket(pkg);
+                            ItemStack itemStack3 = itemStack2.copyWithCount(button == 0 ? 1 : itemStack2.getMaxStackSize());
+                            this.minecraft.player.drop(itemStack3, true);
+                            ServerboundSetCreativeModeSlotPacket pkg = new ServerboundSetCreativeModeSlotPacket(-1, itemStack3);
+                            ClientPacketListener net = Minecraft.getInstance().getConnection();
+                            net.send(pkg);
                         }
 
                         return;
                     }
 
-                    if (!itemStack.isEmpty() && !itemStack2.isEmpty() && ItemStack.areItemsAndComponentsEqual(itemStack, itemStack2)) {
+                    if (!itemStack.isEmpty() && !itemStack2.isEmpty() && ItemStack.isSameItemSameComponents(itemStack, itemStack2)) {
                         if (button == 0) {
                             if (bl) {
-                                itemStack.setCount(itemStack.getMaxCount());
-                            } else if (itemStack.getCount() < itemStack.getMaxCount()) {
-                                itemStack.increment(1);
+                                itemStack.setCount(itemStack.getMaxStackSize());
+                            } else if (itemStack.getCount() < itemStack.getMaxStackSize()) {
+                                itemStack.grow(1);
                             }
                         } else {
-                            itemStack.decrement(1);
+                            itemStack.shrink(1);
                         }
                     } else if (!itemStack2.isEmpty() && itemStack.isEmpty()) {
-                        int j = bl ? itemStack2.getMaxCount() : itemStack2.getCount();
-                        this.handler.setCursorStack(itemStack2.copyWithCount(j));
+                        int j = bl ? itemStack2.getMaxStackSize() : itemStack2.getCount();
+                        this.menu.setCarried(itemStack2.copyWithCount(j));
                     } else if (button == 0) {
-                        this.handler.setCursorStack(ItemStack.EMPTY);
-                    } else if (!this.handler.getCursorStack().isEmpty()) {
-                        this.handler.getCursorStack().decrement(1);
+                        this.menu.setCarried(ItemStack.EMPTY);
+                    } else if (!this.menu.getCarried().isEmpty()) {
+                        this.menu.getCarried().shrink(1);
                     }
-                } else if (this.handler != null) {
-                    ItemStack itemStackx = slot == null ? ItemStack.EMPTY : this.handler.getSlot(slot.id).getStack();
-                    if (actionType == SlotActionType.THROW) {
+                } else if (this.menu != null) {
+                    ItemStack itemStackx = slot == null ? ItemStack.EMPTY : this.menu.getSlot(slot.index).getItem();
+                    if (actionType == ContainerInput.THROW) {
                         ItemStack drop = itemStackx.split(button == 0 ? 1 : itemStackx.getCount());
-                        this.client.player.dropItem(drop, true);
-                        CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(-1, drop);
-                        ClientPlayNetworkHandler net = MinecraftClient.getInstance().getNetworkHandler();
-                        net.sendPacket(pkg);
-                        this.client.player.getInventory().setStack(slotId-20, itemStackx);
-                        pkg = new CreativeInventoryActionC2SPacket(slotId-20, itemStackx);
-                        net = MinecraftClient.getInstance().getNetworkHandler();
-                        net.sendPacket(pkg);
-                    } else if (actionType == SlotActionType.QUICK_MOVE) {
-                        this.client.player.getInventory().setStack(slotId-20, ItemStack.EMPTY);
-                        CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(slotId-20, ItemStack.EMPTY);
-                        ClientPlayNetworkHandler net = MinecraftClient.getInstance().getNetworkHandler();
-                        net.sendPacket(pkg);
+                        this.minecraft.player.drop(drop, true);
+                        ServerboundSetCreativeModeSlotPacket pkg = new ServerboundSetCreativeModeSlotPacket(-1, drop);
+                        ClientPacketListener net = Minecraft.getInstance().getConnection();
+                        net.send(pkg);
+                        this.minecraft.player.getInventory().setItem(slotId-20, itemStackx);
+                        pkg = new ServerboundSetCreativeModeSlotPacket(slotId-20, itemStackx);
+                        net = Minecraft.getInstance().getConnection();
+                        net.send(pkg);
+                    } else if (actionType == ContainerInput.QUICK_MOVE) {
+                        this.minecraft.player.getInventory().setItem(slotId-20, ItemStack.EMPTY);
+                        ServerboundSetCreativeModeSlotPacket pkg = new ServerboundSetCreativeModeSlotPacket(slotId-20, ItemStack.EMPTY);
+                        ClientPacketListener net = Minecraft.getInstance().getConnection();
+                        net.send(pkg);
                     } else {
-                        this.handler.onSlotClick((slot == null ? slotId : slot.id), button, actionType, this.client.player);
-                        if (ScreenHandler.unpackQuickCraftStage(button) == 2) {
+                        this.menu.clicked((slot == null ? slotId : slot.index), button, actionType, this.minecraft.player);
+                        if (AbstractContainerMenu.getQuickcraftHeader(button) == 2) {
                             for (int k = 0; k < 9; k++) {
-                                CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(36 + k, this.handler.getSlot(20 + k).getStack());
-                                ClientPlayNetworkHandler net = MinecraftClient.getInstance().getNetworkHandler();
-                                net.sendPacket(pkg);
+                                ServerboundSetCreativeModeSlotPacket pkg = new ServerboundSetCreativeModeSlotPacket(36 + k, this.menu.getSlot(20 + k).getItem());
+                                ClientPacketListener net = Minecraft.getInstance().getConnection();
+                                net.send(pkg);
                             }
-                        } else if (slot != null && PlayerInventory.isValidHotbarIndex(slot.getIndex())) {
-                            ItemStack stack2 = slot.getStack();
-                            CreativeInventoryActionC2SPacket pkg = new CreativeInventoryActionC2SPacket(slotId, stack2);
-                            ClientPlayNetworkHandler net = MinecraftClient.getInstance().getNetworkHandler();
-                            net.sendPacket(pkg);
+                        } else if (slot != null && Inventory.isHotbarSlot(slot.getContainerSlot())) {
+                            ItemStack stack2 = slot.getItem();
+                            ServerboundSetCreativeModeSlotPacket pkg = new ServerboundSetCreativeModeSlotPacket(slotId, stack2);
+                            ClientPacketListener net = Minecraft.getInstance().getConnection();
+                            net.send(pkg);
                         }
                     }
                 }
@@ -279,26 +277,26 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         if (click.button() == 0) {
-            double d = click.x() - this.x;
-            double e = click.y() - this.y;
+            double d = click.x() - this.leftPos;
+            double e = click.y() - this.topPos;
             this.scrolling = false;
 
             if (this.isClickInScrollbar(click.x(), click.y())) {
-                this.scrolling = handler.shouldShowScrollbar();
+                this.scrolling = menu.shouldShowScrollbar();
                 return true;
             }
 
             if (9 <= d && d < 89) {
                 if (35 <= e && e < 55) {
                     BannerScreenHandler.mainColor = getClickedColor(d - 9, e - 35);
-                    handler.updateBanners(scrollPosition);
+                    menu.updateBanners(scrollPosition);
                     return true;
                 }
                 if (71 <= e && e < 91) {
                     BannerScreenHandler.backColor = getClickedColor(d - 9, e - 71);
-                    handler.updateBanners(scrollPosition);
+                    menu.updateBanners(scrollPosition);
                     return true;
                 }
             }
@@ -308,8 +306,8 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     protected boolean isClickInScrollbar(double mouseX, double mouseY) {
-        int i = this.x;
-        int j = this.y;
+        int i = this.leftPos;
+        int j = this.topPos;
         int k = i + 175;
         int l = j + 18;
         int m = k + 14;
@@ -318,7 +316,7 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Override
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(MouseButtonEvent click) {
         if (click.button() == 0) {
             this.scrolling = false;
         }
@@ -343,16 +341,16 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
     }
 
     @Environment(EnvType.CLIENT)
-    public static class BannerScreenHandler extends ScreenHandler {
+    public static class BannerScreenHandler extends AbstractContainerMenu {
         private static BannerMenuColors mainColor = BannerMenuColors.BLACK;
         private static  BannerMenuColors backColor = BannerMenuColors.WHITE;
-        public final DefaultedList<ItemStack> bannerList = DefaultedList.of();
-        private final ScreenHandler parent;
+        public final NonNullList<ItemStack> bannerList = NonNullList.create();
+        private final AbstractContainerMenu parent;
 
-        public BannerScreenHandler(PlayerEntity player) {
+        public BannerScreenHandler(Player player) {
             super(null, 0);
-            this.parent = player.playerScreenHandler;
-            PlayerInventory playerInventory = player.getInventory();
+            this.parent = player.inventoryMenu;
+            Inventory playerInventory = player.getInventory();
 
             int startX = 99,
                     startY = 18;
@@ -364,17 +362,17 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
 
             bannerList.addAll(BannerConfig.getBanners(mainColor.getColor(), backColor.getColor()));
 
-            this.addPlayerHotbarSlots(playerInventory, 9, 112);
+            this.addInventoryHotbarSlots(playerInventory, 9, 112);
             this.scrollItems(0.0F);
         }
 
         @Override
-        public boolean canUse(PlayerEntity player) {
+        public boolean stillValid(Player player) {
             return true;
         }
 
         protected int getOverflowRows() {
-            return MathHelper.ceilDiv(this.bannerList.size(), 4) - 5;
+            return Mth.positiveCeilDiv(this.bannerList.size(), 4) - 5;
         }
 
         protected int getRow(float scroll) {
@@ -382,11 +380,11 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
         }
 
         protected float getScrollPosition(int row) {
-            return MathHelper.clamp((float)row / this.getOverflowRows(), 0.0F, 1.0F);
+            return Mth.clamp((float)row / this.getOverflowRows(), 0.0F, 1.0F);
         }
 
         protected float getScrollPosition(float current, double amount) {
-            return MathHelper.clamp(current - (float)(amount / this.getOverflowRows()), 0.0F, 1.0F);
+            return Mth.clamp(current - (float)(amount / this.getOverflowRows()), 0.0F, 1.0F);
         }
 
         public void scrollItems(float position) {
@@ -396,9 +394,9 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
                 for (int k = 0; k < 4; k++) {
                     int l = k + (j + i) * 4;
                     if (l >= 0 && l < this.bannerList.size()) {
-                        BannerPanel.INVENTORY.setStack(k + j * 4, this.bannerList.get(l));
+                        BannerPanel.INVENTORY.setItem(k + j * 4, this.bannerList.get(l));
                     } else {
-                        BannerPanel.INVENTORY.setStack(k + j * 4, ItemStack.EMPTY);
+                        BannerPanel.INVENTORY.setItem(k + j * 4, ItemStack.EMPTY);
                     }
                 }
             }
@@ -415,11 +413,11 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
         }
 
         @Override
-        public ItemStack quickMove(PlayerEntity player, int slot) {
+        public ItemStack quickMoveStack(Player player, int slot) {
             if (slot >= this.slots.size() - 4 && slot < this.slots.size()) {
                 Slot slot2 = this.slots.get(slot);
-                if (slot2 != null && slot2.hasStack()) {
-                    slot2.setStack(ItemStack.EMPTY);
+                if (slot2 != null && slot2.hasItem()) {
+                    slot2.setByPlayer(ItemStack.EMPTY);
                 }
             }
 
@@ -427,13 +425,13 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
         }
 
         @Override
-        public boolean canInsertIntoSlot(ItemStack stack, Slot slot) {
-            return slot.inventory != BannerPanel.INVENTORY;
+        public boolean canTakeItemForPickAll(ItemStack stack, Slot slot) {
+            return slot.container != BannerPanel.INVENTORY;
         }
 
         @Override
-        public boolean canInsertIntoSlot(Slot slot) {
-            return slot.inventory != BannerPanel.INVENTORY;
+        public boolean canDragTo(Slot slot) {
+            return slot.container != BannerPanel.INVENTORY;
         }
     }
 
@@ -442,88 +440,88 @@ public class BannerPanel extends HandledScreen<BannerPanel.BannerScreenHandler> 
         final Slot slot;
 
         public BannerSlot(Slot slot, int invSlot, int x, int y) {
-            super(slot.inventory, invSlot, x, y);
+            super(slot.container, invSlot, x, y);
             this.slot = slot;
         }
 
         @Override
-        public void onTakeItem(PlayerEntity player, ItemStack stack) {
-            this.slot.onTakeItem(player, stack);
+        public void onTake(Player player, ItemStack stack) {
+            this.slot.onTake(player, stack);
         }
 
         @Override
-        public boolean canInsert(ItemStack stack) {
-            return this.slot.canInsert(stack);
+        public boolean mayPlace(ItemStack stack) {
+            return this.slot.mayPlace(stack);
         }
 
         @Override
-        public ItemStack getStack() {
-            return this.slot.getStack();
+        public ItemStack getItem() {
+            return this.slot.getItem();
         }
 
         @Override
-        public boolean hasStack() {
-            return this.slot.hasStack();
+        public boolean hasItem() {
+            return this.slot.hasItem();
         }
 
         @Override
-        public void setStack(ItemStack stack, ItemStack previousStack) {
-            this.slot.setStack(stack, previousStack);
+        public void setByPlayer(ItemStack stack, ItemStack previousStack) {
+            this.slot.setByPlayer(stack, previousStack);
         }
 
         @Override
-        public void setStackNoCallbacks(ItemStack stack) {
-            this.slot.setStackNoCallbacks(stack);
+        public void set(ItemStack stack) {
+            this.slot.set(stack);
         }
 
         @Override
-        public void markDirty() {
-            this.slot.markDirty();
+        public void setChanged() {
+            this.slot.setChanged();
         }
 
         @Override
-        public int getMaxItemCount() {
-            return this.slot.getMaxItemCount();
+        public int getMaxStackSize() {
+            return this.slot.getMaxStackSize();
         }
 
         @Override
-        public int getMaxItemCount(ItemStack stack) {
-            return this.slot.getMaxItemCount(stack);
+        public int getMaxStackSize(ItemStack stack) {
+            return this.slot.getMaxStackSize(stack);
         }
 
         @Nullable
         @Override
-        public Identifier getBackgroundSprite() {
-            return this.slot.getBackgroundSprite();
+        public Identifier getNoItemIcon() {
+            return this.slot.getNoItemIcon();
         }
 
         @Override
-        public ItemStack takeStack(int amount) {
-            return this.slot.takeStack(amount);
+        public ItemStack remove(int amount) {
+            return this.slot.remove(amount);
         }
 
         @Override
-        public boolean isEnabled() {
-            return this.slot.isEnabled();
+        public boolean isActive() {
+            return this.slot.isActive();
         }
 
         @Override
-        public boolean canTakeItems(PlayerEntity playerEntity) {
-            return this.slot.canTakeItems(playerEntity);
+        public boolean mayPickup(Player playerEntity) {
+            return this.slot.mayPickup(playerEntity);
         }
     }
 
     @Environment(EnvType.CLIENT)
     static class LockableSlot extends Slot {
-        public LockableSlot(Inventory inventory, int i, int j, int k) {
+        public LockableSlot(Container inventory, int i, int j, int k) {
             super(inventory, i, j, k);
         }
 
         @Override
-        public boolean canTakeItems(PlayerEntity playerEntity) {
-            ItemStack itemStack = this.getStack();
-            return super.canTakeItems(playerEntity) && !itemStack.isEmpty()
-                    ? itemStack.isItemEnabled(playerEntity.getEntityWorld().getEnabledFeatures()) && !itemStack.contains(DataComponentTypes.CREATIVE_SLOT_LOCK)
+        public boolean mayPickup(Player playerEntity) {
+            ItemStack itemStack = this.getItem();
+            return super.mayPickup(playerEntity) && !itemStack.isEmpty()
+                    ? itemStack.isItemEnabled(playerEntity.level().enabledFeatures()) && !itemStack.has(DataComponents.CREATIVE_SLOT_LOCK)
                     : itemStack.isEmpty();
         }
     }

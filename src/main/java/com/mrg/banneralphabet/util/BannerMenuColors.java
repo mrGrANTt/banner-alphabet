@@ -1,6 +1,6 @@
 package com.mrg.banneralphabet.util;
 
-import net.minecraft.util.DyeColor;
+import net.minecraft.world.item.DyeColor;
 
 public enum BannerMenuColors {
     WHITE(0,0, DyeColor.WHITE),

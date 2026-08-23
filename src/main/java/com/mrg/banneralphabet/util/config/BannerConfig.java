@@ -5,13 +5,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.mrg.banneralphabet.BannerAlphabet;
-import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.DyeColor;
+import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.DyeColor;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -79,9 +79,9 @@ public class BannerConfig {
     }
 
     public static List<ItemStack> getBanners(DyeColor main, DyeColor back) {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) throw new RuntimeException("Client player entity doesn't initialized");
-        RegistryEntryLookup<BannerPattern> lookup = player.getRegistryManager().getOrThrow(RegistryKeys.BANNER_PATTERN);
+        HolderGetter<BannerPattern> lookup = player.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN);
 
         List<ItemStack> list = new ArrayList<>(List.of());
         for (BannerJSONElement el : banners) {
