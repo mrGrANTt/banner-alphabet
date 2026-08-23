@@ -33,7 +33,7 @@ public class CreativeMenuMixin extends Screen {
 
         Button menuButton = Button.builder(
                         Component.nullToEmpty(""),
-                        button -> this.minecraft.setScreen(new BannerPanel(this, Minecraft.getInstance().player)))
+                        button -> this.minecraft.gui.setScreen(new BannerPanel(this, Minecraft.getInstance().player)))
                 .bounds(x, y, buttonWidth, buttonHeight)
                 .build();
 

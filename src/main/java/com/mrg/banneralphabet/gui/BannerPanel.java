@@ -75,7 +75,7 @@ public class BannerPanel extends AbstractContainerScreen<BannerPanel.BannerScree
 
     @Override
     public void onClose() {
-        Minecraft.getInstance().setScreen(parent);
+        Minecraft.getInstance().gui.setScreen(parent);
     }
 
     @Override

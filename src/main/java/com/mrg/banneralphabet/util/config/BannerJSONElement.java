@@ -32,7 +32,7 @@ public class BannerJSONElement {
     }
 
     public ItemStack getBanner(DyeColor main, DyeColor back, HolderGetter<BannerPattern> lookup) {
-        ItemStack stack = color2Banner(back);
+        ItemStack stack = new ItemStack(Items.BANNER.pick(back));
         List<BannerPatternLayers.Layer> layers = new ArrayList<>();
 
         for (BannerJSONPattern pt : patterns)
@@ -40,27 +40,6 @@ public class BannerJSONElement {
 
         stack.set(DataComponents.BANNER_PATTERNS, new BannerPatternLayers(layers));
         return stack;
-    }
-
-    private ItemStack color2Banner(DyeColor back) {
-        return (switch (back) {
-            case WHITE -> Items.WHITE_BANNER;
-            case ORANGE -> Items.ORANGE_BANNER;
-            case MAGENTA -> Items.MAGENTA_BANNER;
-            case LIGHT_BLUE -> Items.LIGHT_BLUE_BANNER;
-            case YELLOW -> Items.YELLOW_BANNER;
-            case LIME -> Items.LIME_BANNER;
-            case PINK -> Items.PINK_BANNER;
-            case GRAY -> Items.GRAY_BANNER;
-            case LIGHT_GRAY -> Items.LIGHT_GRAY_BANNER;
-            case CYAN -> Items.CYAN_BANNER;
-            case PURPLE -> Items.PURPLE_BANNER;
-            case BLUE -> Items.BLUE_BANNER;
-            case BROWN -> Items.BROWN_BANNER;
-            case GREEN -> Items.GREEN_BANNER;
-            case RED -> Items.RED_BANNER;
-            case BLACK -> Items.BLACK_BANNER;
-        }).getDefaultInstance();
     }
 
     @Override
