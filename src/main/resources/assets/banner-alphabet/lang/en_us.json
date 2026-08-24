@@ -12,5 +12,6 @@
   "banner-alphabet:command.replace": "Banner replaced",
   "banner-alphabet:command.no_replace": "Banner was not replaced; new may already be in the list or old might not be in the list",
   "banner-alphabet:command.no_removed": "Banner has not been deleted; it might not be in the list",
-  "banner-alphabet:command.no_added": "Banner was not added; it may already be in the list"
+  "banner-alphabet:command.no_added": "Banner was not added; it may already be in the list",
+  "banner-alphabet:command.help": "/banners help - show this menu\n\n/banners add - add banner in main hand to config\n\n/banners rem - remove banner in main hand from config\n\n/banners replace - replace banner from off hand to banner to main hand\n\n/banners save - save config(automatically do it on exit minecraft)\n\n/banners load - force load config"
 }
