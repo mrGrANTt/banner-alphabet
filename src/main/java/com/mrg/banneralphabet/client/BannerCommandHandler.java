@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
 
 public final class BannerCommandHandler {
     private static final SuggestionProvider<SharedSuggestionProvider> OPTIONS = SuggestionProviders.register(Identifier.parse("mrg:banner-alphabet/suggest"),  (context, builder) ->
-            SharedSuggestionProvider.suggest(new String[]{"add", "rem", "replace", "save", "load"}, builder));
+            SharedSuggestionProvider.suggest(new String[]{"add", "rem", "replace", "save", "load", "help"}, builder));
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("banners")
@@ -64,6 +64,9 @@ public final class BannerCommandHandler {
             case "load":
                 BannerConfig.deserialize();
                 context.getSource().sendSystemMessage(Component.translatable("banner-alphabet:command.loaded"));
+                break;
+            case "help":
+                context.getSource().sendSystemMessage(Component.translatable("banner-alphabet:command.help"));
                 break;
             default:
                 return 0;
