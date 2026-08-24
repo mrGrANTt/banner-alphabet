@@ -11,5 +11,6 @@
   "banner-alphabet:command.replace": "Баннер заменен",
   "banner-alphabet:command.no_replace": "Баннер не заменен, возможно старого нет в списке или уже новый уже содержиться в списке",
   "banner-alphabet:command.no_removed": "Баннер не удален, возможно его нет в списке",
-  "banner-alphabet:command.no_added": "Баннер не добавлен, возможно он уже содержиться в списке"
+  "banner-alphabet:command.no_added": "Баннер не добавлен, возможно он уже содержиться в списке",
+  "banner-alphabet:command.help": "/banners help — показать это меню\n\n/banners add — добавить знамя из основной руки в конфигурацию\n\n/banners rem — удалить знамя из основной руки из конфигурации\n\n/banners replace — заменить знамя из второй руки на знамя из основной руки\n\n/banners save — сохранить конфигурацию (выполняется автоматически при выходе из Minecraft)\n\n/banners load — принудительно загрузить конфигурацию"
 }
