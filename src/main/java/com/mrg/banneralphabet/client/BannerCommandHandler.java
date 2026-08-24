@@ -14,7 +14,7 @@ import net.minecraft.text.Text;
 
 public final class BannerCommandHandler {
     private static final SuggestionProvider<FabricClientCommandSource> OPTIONS = (context, builder) ->
-            CommandSource.suggestMatching(new String[]{"add", "rem", "replace", "save", "load"}, builder);
+            CommandSource.suggestMatching(new String[]{"add", "rem", "replace", "save", "load", "help"}, builder);
 
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(ClientCommandManager.literal("banners")
