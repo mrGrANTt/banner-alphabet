@@ -3,12 +3,12 @@
 	"id": "banner-alphabet",
 	"version": "${version}",
 	"name": "Banner alphabet",
-	"description": "This mod adds a new menu to creative that allows you to automatically create banners!",
+	"description": "This mod adds a new menu to creative that allows you to automatically create banners!\n\n/banners help - commands help",
 	"authors": [
 		"mr_GrANTt"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
+		"homepage": "https://mrgrantt.github.io/mrg-links-page/",
 		"sources": "https://github.com/mrGrANTt/banner-alphabet"
 	},
 	"license": "MIT License",
